@@ -162,7 +162,11 @@ class CompilerTestGroupingTestEngine : TestEngine {
             }
         } finally {
             // The tests of a nested class are spread over the batches of the whole top-level class,
-            // so the containers are finished, bottom-up, only once all of them are done.
+            // so the finalization of containers is performed here, only once all the batches are done.
+            // Per javadoc for `EngineExecutionListener.executionFinished()`:
+            //   at the moment of container finalization, its non-finished children will be marked as SKIPPED.
+            // So for correct finalization, `containers` must be iterated in the reversed order,
+            // so nested classes will be finished before their parents
             for ([descriptor, context] in containers.asReversed()) {
                 context.executionListener.executionFinished(descriptor, context.throwableCollector.toTestExecutionResult())
             }
