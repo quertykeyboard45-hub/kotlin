@@ -247,6 +247,9 @@ class CompilerTestGroupingTestEngine : TestEngine {
             collector.executeCatchingAll { if (testInstance.secondStageRunnerInitialized) testInstance.groupingStageRunner.finalizeAndDispose() }
         }
         if (collector.isEmpty) return tokens
+        // The test has failed while being configured, so it never joins a batch and must be reported right here.
+        // No tests have been notified as started during planning stage (it will be started later, during `executeBatch` stage)
+        // so to report a failure, executionStarted() must be reported before executionFinished() .
         methodContext.executionListener.executionStarted(method)
         methodContext.executionListener.executionFinished(method, collector.toTestExecutionResult())
         return null
