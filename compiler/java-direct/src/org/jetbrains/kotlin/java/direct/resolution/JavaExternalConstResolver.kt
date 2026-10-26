@@ -199,3 +199,20 @@ private fun extractEvaluatedConstValue(property: FirProperty, session: FirSessio
 
     return ((evaluated as? FirEvaluatorResult.Evaluated)?.result as? FirLiteralExpression)?.value
 }
+
+/**
+ * Cross-language constant-field resolution for qualified references such as `Foo.BAR` where
+ * `Foo` is a Kotlin class or facade. Returns `null` when no `const val` is found.
+ */
+context(c: JavaResolutionContext)
+internal fun resolveExternalFieldValue(classQualifier: String?, qualifierClassId: ClassId?, fieldName: String): Any? =
+    c.fileContext.session.resolveExternalFieldValue(classQualifier, qualifierClassId, fieldName, c.packageFqName)
+
+/**
+ * Const-vs-enum-entry disambiguation for annotation arguments that look syntactically like enum
+ * entries but may denote a Kotlin `const val`. Returns `null` when the reference is a real enum
+ * entry or unresolvable.
+ */
+context(c: JavaResolutionContext)
+internal fun resolveConstFieldValue(classId: ClassId, fieldName: Name): Any? =
+    c.fileContext.session.resolveConstFieldValue(classId, fieldName)
