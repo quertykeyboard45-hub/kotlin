@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.types.TypeApproximatorConfiguration
 import org.jetbrains.kotlin.types.Variance
+import org.jetbrains.kotlin.types.model.isFinalClassConstructor
 
 /**
  * Computes type arguments of [castClass] that are statically known from [originalType] based on
@@ -36,7 +37,7 @@ fun FirSession.staticallyKnownTypeArgumentsByTypeParameterInheritance(
     castClass: FirRegularClassSymbol,
     originalType: ConeKotlinType,
     requireEqualBounds: Boolean,
-    requireFullInference: Boolean
+    requireFullInference: Boolean,
 ): Array<ConeTypeProjection>? {
     val preparedType = originalType.lowerBoundIfFlexible().fullyExpandedType(this)
 
@@ -146,7 +147,13 @@ fun FirSession.staticallyKnownTypeArgumentsByTypeParameterInheritance(
         } else {
             val argumentType = originalArgument.type ?: return@Array ConeStarProjection
             when (originalParameterVariance) {
-                Variance.OUT_VARIANCE -> ConeKotlinTypeProjectionOut(argumentType)
+                Variance.OUT_VARIANCE -> {
+                    if (argumentType is ConeClassLikeType && with(this.typeContext) { argumentType.lookupTag.isFinalClassConstructor() }) {
+                        argumentType
+                    } else {
+                        ConeKotlinTypeProjectionOut(argumentType)
+                    }
+                }
                 Variance.IN_VARIANCE -> ConeKotlinTypeProjectionIn(argumentType)
                 else -> ConeStarProjection
             }
