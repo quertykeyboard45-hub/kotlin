@@ -82,15 +82,13 @@ class WasmGroupingTestIsolator(testServices: TestServices) : GroupingTestIsolato
             file.parentFile.resolve(file.nameWithoutExtension + ".mjs").exists() ||
             file.parentFile.resolve(file.nameWithoutExtension + "__main.js").exists()
         }
-        if (hasCompanionJsFile)
-            return BatchToken.Isolated
+        if (hasCompanionJsFile) return BatchToken.Isolated
 
         // Don't group tests declaring `main` function, since `main`s of different tests clash within one batch.
         val declaresMain = moduleStructure.modules.any { module ->
             module.files.any { !it.isAdditional && it.originalContent.contains(TOP_LEVEL_MAIN_REGEX) }
         }
-        if (declaresMain)
-            return BatchToken.Isolated
+        if (declaresMain) return BatchToken.Isolated
 
         val specificTokens = listOfNotNull(
             computeEHToken(moduleStructure),
