@@ -36,13 +36,13 @@ fun test() {
 
 class Foo {
     val lambda = {
-        <!CAN_BE_VAL!>var<!> x = 0
+        var x = 0
         ++x
     }
 
     init {
         invokeLater {
-            <!CAN_BE_VAL!>var<!> x = 0
+            var x = 0
             ++x
         }
     }
@@ -75,13 +75,13 @@ class Foo {
 
     class Nested {
         val lambda = {
-            <!CAN_BE_VAL!>var<!> x = 0
+            var x = 0
             ++x
         }
 
         init {
             invokeLater {
-                <!CAN_BE_VAL!>var<!> x = 0
+                var x = 0
                 ++x
             }
         }
@@ -89,13 +89,13 @@ class Foo {
 
     inner class Inner {
         val lambda = {
-            <!CAN_BE_VAL!>var<!> x = 0
+            var x = 0
             ++x
         }
 
         init {
             invokeLater {
-                <!CAN_BE_VAL!>var<!> x = 0
+                var x = 0
                 ++x
             }
         }
@@ -103,13 +103,13 @@ class Foo {
 
     companion object {
         val lambda = {
-            <!CAN_BE_VAL_DELAYED_INITIALIZATION!>var<!> x = 0
+            var x = 0
             ++x
         }
 
         init {
             invokeLater {
-                <!CAN_BE_VAL_DELAYED_INITIALIZATION!>var<!> x = 0
+                var x = 0
                 ++x
             }
         }
