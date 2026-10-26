@@ -223,7 +223,7 @@ class ConstantEvaluator private constructor(
             val localValue = containingClass?.let { resolveFieldValue(it, refText) }
             if (localValue != null) return localValue
 
-            val staticImportFqn = with(resolutionContext) { getStaticImport(refText) }?.asString()
+            val staticImportFqn = getStaticImport(refText, c = resolutionContext)?.asString()
             val importDot = staticImportFqn?.lastIndexOf('.') ?: -1
             if (staticImportFqn == null || importDot < 0) {
                 return resolveExternalReference(null, null, refText)

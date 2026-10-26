@@ -53,7 +53,7 @@ class JavaAnnotationOverAst(
     private fun computeClassId(): ClassId? {
         val reference = annotationName ?: return null
 
-        with(resolutionContext) { resolve(reference) }?.let { return it }
+        resolve(reference, c = resolutionContext)?.let { return it }
 
         // No-symbol-provider fallback (parsing-level unit fixtures): `resolve` returned null
         // because `tryResolve` is always `false` without a provider. The `ClassId.topLevel`
@@ -64,7 +64,7 @@ class JavaAnnotationOverAst(
             return ClassId.topLevel(FqName(reference))
         }
 
-        val imported = with(resolutionContext) { getSimpleImport(reference) }
+        val imported = getSimpleImport(reference, c = resolutionContext)
         if (imported != null) {
             return ClassId.topLevel(imported)
         }
@@ -120,7 +120,7 @@ internal fun createAnnotationArgumentFromValue(
             val enumArg = JavaEnumValueAnnotationArgumentOverAst(name, valueNode, tree, resolutionContext)
             val classId = enumArg.enumClassId
             val constValue = if (classId != null) {
-                with(resolutionContext) { resolveConstFieldValue(classId, enumArg.entryName) }
+                resolveConstFieldValue(classId, enumArg.entryName, c = resolutionContext)
             } else null
             // Not a `const val`: the reference may still name a Java `static final` constant of
             // this compilation unit, that is evaluated on the AST.
@@ -187,7 +187,7 @@ class JavaEnumValueAnnotationArgumentOverAst(
     private val staticImportResolution: Pair<String, String>? by lazy(LazyThreadSafetyMode.PUBLICATION) {
         val text = tree.getText(refNode).toString()
         if (text.contains('.')) return@lazy null
-        val importedFqn = with(resolutionContext) { getStaticImport(text) } ?: return@lazy null
+        val importedFqn = getStaticImport(text, c = resolutionContext) ?: return@lazy null
         val fqnStr = importedFqn.asString()
         val lastDot = fqnStr.lastIndexOf('.')
         if (lastDot < 0) return@lazy null

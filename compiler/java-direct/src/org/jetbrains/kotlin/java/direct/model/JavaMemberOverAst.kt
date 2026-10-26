@@ -247,7 +247,7 @@ class JavaFieldOverAst(
         if (localField != null) {
             return localField.isFinal
         }
-        return with(containingClass.resolutionContext) { getSimpleImport(name) } != null
+        return getSimpleImport(name, c = containingClass.resolutionContext) != null
     }
 
     /**
