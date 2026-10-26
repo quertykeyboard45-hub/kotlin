@@ -415,6 +415,8 @@ class CompilerTestGroupingTestEngine : TestEngine {
             uniqueId = classDescriptor.uniqueId.append("dynamic-test", "batch$index"),
             displayName = "Grouped batch #$index"
         )
+        // Batches within one class run concurrently, and `TestDescriptor` doesn't promise a thread-safe `addChild()`,
+        // albeit its only implementation adds the child into a synchronized set, but we should not rely on it.
         synchronized(classDescriptor) { classDescriptor.addChild(testDescriptor) }
         val throwableCollector = createThrowableCollector()
         val someTestInstance = batch.first().testInstance
