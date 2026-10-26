@@ -111,12 +111,12 @@ class JsModule(
             }
         }
 
-        val result = compilationOperation.let {
+        val linkingResult = compilationOperation.let {
             compilationAction(it)
             buildSession.executeOperation(it, strategyConfig, kotlinLogger)
         }
 
-        if (useRichDtsGenerator) {
+        val result = if (useRichDtsGenerator && linkingResult == CompilationResult.COMPILATION_SUCCESS) {
             val dtsOperation = kotlinToolchain.js.jsDtsGenerationOperationBuilder(
                 dependencyFiles + listOf(klibCompilationOutput),
                 destinationDirectory,
@@ -125,6 +125,8 @@ class JsModule(
                 .build()
 
             buildSession.executeOperation(dtsOperation, strategyConfig, kotlinLogger)
+        } else {
+            linkingResult
         }
 
 

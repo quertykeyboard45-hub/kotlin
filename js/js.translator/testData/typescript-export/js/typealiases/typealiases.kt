@@ -3,6 +3,10 @@
 // The feature is supported only in the Analysis API based TypeScript export
 // since IR doesn't have typealiases
 
+// ES6_MODE
+// ^^^^^^
+// Since we use suspend lambdas in the test that are supported only with usage of e
+
 // CHECK_TYPESCRIPT_DECLARATIONS
 // RUN_PLAIN_BOX_FUNCTION
 // SKIP_NODE_JS

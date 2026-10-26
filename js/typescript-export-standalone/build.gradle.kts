@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":core:compiler.common"))
     runtimeOnly(project(":analysis:analysis-api-standalone:analysis-api-standalone-fir"))
     implementation(project(":core:compiler.common.js"))
+    implementation(project(":compiler:ir.serialization.js"))
+    implementation(project(":compiler:util"))
     implementation(project(":core:util.runtime"))
     implementation(project(":js:js.ast"))
     implementation(project(":js:typescript-export-model"))
@@ -26,6 +28,7 @@ dependencies {
 
     api(project(":kotlin-util-klib-metadata"))
     api(project(":js:js.config"))
+    api(project(":compiler:frontend.common"))
 }
 
 sourceSets {

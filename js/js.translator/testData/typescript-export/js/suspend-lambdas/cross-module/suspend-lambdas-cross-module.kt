@@ -1,3 +1,7 @@
+// ES6_MODE
+// ^^^^^^
+// Since we use suspend lambdas in the test that are supported only with usage of ES2015 generators
+
 // ES_MODULES
 // CHECK_TYPESCRIPT_DECLARATIONS
 // DISABLE_JS_EXPORT_SOURCE_PREPROCESSOR

@@ -6,7 +6,6 @@
 package org.jetbrains.kotlin.gradle.targets.js.typescript
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.model.ObjectFactory
@@ -16,7 +15,6 @@ import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -24,6 +22,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.NormalizeLineEndings
+import org.jetbrains.kotlin.buildtools.api.CompilationResult
 import org.jetbrains.kotlin.buildtools.api.js.JsDtsGranularity
 import org.jetbrains.kotlin.buildtools.api.js.JsPlatformToolchain.Companion.js
 import org.jetbrains.kotlin.buildtools.api.js.operations.JsDtsGenerationOperation.Companion.COMPILE_LONG_AS_BIG_INT
@@ -45,6 +44,7 @@ import org.jetbrains.kotlin.gradle.logging.GradleKotlinLogger
 import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics
 import org.jetbrains.kotlin.gradle.plugin.diagnostics.UsesKotlinToolingDiagnostics
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrOutputGranularity
+import org.jetbrains.kotlin.gradle.tasks.CompilationErrorException
 import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 import org.jetbrains.kotlin.tooling.core.toKotlinVersion
 import java.io.File
@@ -130,11 +130,15 @@ internal abstract class KotlinJsDtsGenerationTask @Inject constructor(
             }
             .build()
 
-        buildSession.executeOperation(
+        val result = buildSession.executeOperation(
             dtsOperation,
             buildSession.kotlinToolchains.createInProcessExecutionPolicy(),
             GradleKotlinLogger(logger)
         )
+
+        if (result != CompilationResult.COMPILATION_SUCCESS) {
+            throw CompilationErrorException("TypeScript declarations generation failed. See log for more details")
+        }
     }
 
     companion object {
