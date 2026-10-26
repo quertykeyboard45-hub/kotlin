@@ -13,7 +13,6 @@ import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.descriptors.java.JavaVisibilities
 import org.jetbrains.kotlin.java.direct.resolution.JavaResolutionContext
 import org.jetbrains.kotlin.java.direct.resolution.getSimpleImport
-import org.jetbrains.kotlin.java.direct.resolution.resolveExternalFieldValue
 import org.jetbrains.kotlin.java.direct.util.ConstantEvaluator
 import org.jetbrains.kotlin.java.direct.util.JavaLiteralParser
 import org.jetbrains.kotlin.java.direct.util.computeTypeParameters
@@ -252,18 +251,14 @@ class JavaFieldOverAst(
     }
 
     /**
-     * Evaluates the field's initializer using the local [ConstantEvaluator]; qualified references
-     * to Kotlin `const val`s (e.g. `Foo.BAR`) are routed through
-     * `JavaResolutionContext.resolveExternalFieldValue`, which delegates to the session-backed
-     * cross-language resolver in `JavaExternalConstResolver.kt`.
+     * Evaluates the field's initializer using the local [ConstantEvaluator], which also resolves
+     * qualified references to Kotlin `const val`s through the session-backed cross-language resolver.
      */
     override val initializerValue: Any?
         get() {
             if (!hasConstantNotNullInitializer) return null
             val init = initializerNode ?: return null
-            val evaluator = ConstantEvaluator(containingClass) { classQualifier, qualifierClassId, fieldName ->
-                with(containingClass.resolutionContext) { resolveExternalFieldValue(classQualifier, qualifierClassId, fieldName) }
-            }
+            val evaluator = ConstantEvaluator(containingClass)
             return coerceConstantToFieldType(evaluator.evaluate(init))
         }
 
