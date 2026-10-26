@@ -48,7 +48,7 @@ import org.jetbrains.kotlin.wasm.test.handlers.WasmWasiCoroutinesStackSwitchingB
 import org.jetbrains.kotlin.wasm.test.providers.WasmJsLauncherAdditionalSourceProvider
 import org.jetbrains.kotlin.wasm.test.utils.configureIgnoredTestSuppressor
 import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.BeforeAll
 
 abstract class AbstractWasmCodegenBoxTest(
     val backend: TargetBackend,
@@ -192,20 +192,23 @@ abstract class AbstractWasmWasiCodegenCoroutinesStackSwitchingTest : AbstractWas
     override val wasmCompilationSetsBoxRunner: Constructor<GroupingStageHandler<BinaryArtifacts.Wasm>> =
         ::WasmWasiCoroutinesStackSwitchingBoxRunner
 
-    @BeforeEach
-    fun assumeStackSwitchingIsSupported() {
-        // Wasmtime supports the stack switching proposal only on x86_64 Linux
-        val isLinux = System.getProperty("os.name").startsWith("Linux", ignoreCase = true)
-        val isX64 = System.getProperty("os.arch").lowercase() in setOf("amd64", "x86_64")
-        Assumptions.assumeTrue(isLinux && isX64, "Wasmtime supports the stack switching proposal only on x86_64 Linux")
-    }
-
     override fun configure(builder: TwoStageTestConfigurationBuilder): Unit = with(builder) {
         super.configure(this)
         commonConfiguration {
             defaultDirectives {
                 +WasmEnvironmentConfigurationDirectives.USE_STACK_SWITCHING_PROPOSAL
             }
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun assumeStackSwitchingIsSupported() {
+            // Wasmtime supports the stack switching proposal only on x86_64 Linux
+            val isLinux = System.getProperty("os.name").startsWith("Linux", ignoreCase = true)
+            val isX64 = System.getProperty("os.arch").lowercase() in setOf("amd64", "x86_64")
+            Assumptions.assumeTrue(isLinux && isX64, "Wasmtime supports the stack switching proposal only on x86_64 Linux")
         }
     }
 }
