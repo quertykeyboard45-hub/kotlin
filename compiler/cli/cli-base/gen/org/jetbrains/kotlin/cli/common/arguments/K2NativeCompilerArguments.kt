@@ -49,6 +49,16 @@ Currently this option is disabled by default on other platforms.""",
         }
 
     @Argument(
+        value = "-Xaugment-header-klib",
+        description = "Experimental: generate an augmented header klib required for generating header caches",
+    )
+    var augmentHeaderKlib: Boolean = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
+    @Argument(
         value = "-Xauto-cache-dir",
         valueDescription = "<path>",
         description = "Path to the directory where caches for auto-cacheable dependencies should be put.",

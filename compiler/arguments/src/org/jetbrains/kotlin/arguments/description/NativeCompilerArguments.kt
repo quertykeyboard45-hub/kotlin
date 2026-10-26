@@ -785,6 +785,16 @@ The default value is 1.""".asReleaseDependent()
     }
 
     compilerArgument {
+        name = "Xaugment-header-klib"
+        description = "Experimental: generate an augmented header klib required for generating header caches".asReleaseDependent()
+        valueType = BooleanType.defaultFalse
+
+        lifecycle(
+            introducedVersion = KotlinReleaseVersion.v2_5_0
+        )
+    }
+
+    compilerArgument {
         name = "Xdebug-prefix-map"
         description = "Remap file source directory paths in debug info.".asReleaseDependent()
         valueType = StringArrayType.defaultNull

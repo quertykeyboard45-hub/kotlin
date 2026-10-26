@@ -125,6 +125,10 @@ object NativeConfigurationKeys {
     @JvmField
     val KONAN_GENERATED_HEADER_KLIB_PATH = CompilerConfigurationKey.create<String>("KONAN_GENERATED_HEADER_KLIB_PATH")
 
+    // If the generated header klib should be augmented with the info needed for producing header caches
+    @JvmField
+    val KONAN_AUGMENT_HEADER_KLIB = CompilerConfigurationKey.create<Boolean>("KONAN_AUGMENT_HEADER_KLIB")
+
     @JvmField
     val KONAN_NATIVE_LIBRARIES = CompilerConfigurationKey.create<List<String>>("KONAN_NATIVE_LIBRARIES")
 
@@ -398,6 +402,10 @@ var CompilerConfiguration.konanManifestAddend: String?
 var CompilerConfiguration.konanGeneratedHeaderKlibPath: String?
     get() = get(NativeConfigurationKeys.KONAN_GENERATED_HEADER_KLIB_PATH)
     set(value) { put(NativeConfigurationKeys.KONAN_GENERATED_HEADER_KLIB_PATH, requireNotNull(value) { "nullable values are not allowed" }) }
+
+var CompilerConfiguration.konanAugmentHeaderKlib: Boolean
+    get() = getBoolean(NativeConfigurationKeys.KONAN_AUGMENT_HEADER_KLIB)
+    set(value) { put(NativeConfigurationKeys.KONAN_AUGMENT_HEADER_KLIB, value) }
 
 var CompilerConfiguration.konanNativeLibraries: List<String>
     get() = getList(NativeConfigurationKeys.KONAN_NATIVE_LIBRARIES)

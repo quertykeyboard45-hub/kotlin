@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.fir.moduleData
 import org.jetbrains.kotlin.fir.pipeline.AllModulesFrontendOutput
 import org.jetbrains.kotlin.fir.pipeline.Fir2KlibMetadataSerializer
 import org.jetbrains.kotlin.ir.KtDiagnosticReporterWithImplicitIrBasedContext
+import org.jetbrains.kotlin.konan.config.konanAugmentHeaderKlib
 import org.jetbrains.kotlin.konan.library.isExplicitlySpecifiedByUserInCLIArgument
 
 internal fun NativeFirstStagePhaseContext.firSerializerBase(
@@ -63,6 +64,7 @@ internal fun NativeFirstStagePhaseContext.firSerializerBase(
                     settings = IrSerializationSettings(
                         configuration = configuration,
                         publicAbiOnly = produceHeaderKlib,
+                        augmentHeaderKlib = produceHeaderKlib && configuration.konanAugmentHeaderKlib,
                     ),
                     diagnosticReporter = irDiagnosticReporter,
                     irBuiltIns = fir2IrOutput?.fir2irActualizedResult?.irBuiltIns!!,

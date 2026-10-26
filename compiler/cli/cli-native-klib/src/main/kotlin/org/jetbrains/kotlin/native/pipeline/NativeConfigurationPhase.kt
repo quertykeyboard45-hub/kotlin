@@ -166,6 +166,7 @@ object NativeKlibConfigurationUpdater : ConfigurationUpdater<K2NativeCompilerArg
         konanNativeLibraries = arguments.nativeLibraries.toList()
 
         arguments.headerKlibPath?.let { konanGeneratedHeaderKlibPath = it }
+        konanAugmentHeaderKlib = arguments.augmentHeaderKlib
 
         arguments.writeDependenciesOfProducedKlibTo?.let { konanWriteDependenciesOfProducedKlibTo = it }
     }
