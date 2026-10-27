@@ -139,8 +139,9 @@ internal fun hasCollectionSupertype(allSupertypes: Iterable<KaClassType>): Boole
  *    - The original Kotlin method SHOULD still be generated with its Kotlin signature
  *
  * 3. **Erased signature case** (returns `false`):
- *    - Each parameter erased to `Object` in Java has a type parameter type, which gets erased as well
+ *    - Each parameter that is `Object` in Java has a type parameter type in Kotlin
  *      (e.g., `contains(element: E)` for `contains(Object)`, or `getOrDefault(key: K, defaultValue: String)` for `getOrDefault(Object, V)`)
+ *    - The type parameters are assumed to erase to `Object`, which doesn't hold for a bounded one, like `K : CharSequence`
  *    - Generates a single non-final bridge method with the erased Java signature
  *    - The original Kotlin method should NOT be generated separately
  *
