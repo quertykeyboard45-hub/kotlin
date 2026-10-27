@@ -88,7 +88,7 @@ abstract class FakeOverrideBuilderStrategy {
      * }
      * ```
      */
-    open val createFakeOverridesForShadowingMembers: Boolean get() = false
+    open val createFakeOverridesForShadowingMembers: Boolean get() = true
 
     /**
      * Creates a fake override for [member] from [superType] to be added to the class [clazz] or returns null,
