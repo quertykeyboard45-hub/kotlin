@@ -56,7 +56,7 @@ abstract class TestShardingArguments : CommandLineArgumentProvider {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val shardTimings: RegularFileProperty
 
-    /** The path of the test task, which takes its classes from [shardTimings], present only with them */
+    /** The path of the test task, which takes its classes from [shardTimings] */
     @get:Input
     @get:Optional
     abstract val shardTask: Property<String>
@@ -82,7 +82,7 @@ abstract class TestShardingArguments : CommandLineArgumentProvider {
             "-D$TEST_SHARD_COUNT_KEY=${shardCount}",
             if (shardSeed.isPresent) "-D$TEST_SHARD_SEED_KEY=${shardSeed.get()}" else null,
             if (shardTimings.isPresent) "-D$TEST_SHARD_TIMINGS_KEY=${shardTimings.get().asFile.absolutePath}" else null,
-            if (shardTask.isPresent) "-D$TEST_SHARD_TASK_KEY=${shardTask.get()}" else null,
+            if (shardTimings.isPresent) "-D$TEST_SHARD_TASK_KEY=${shardTask.get()}" else null,
         )
     }
 }

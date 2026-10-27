@@ -12,8 +12,7 @@ import org.gradle.kotlin.dsl.withType
 internal fun Project.configureTestSharding() {
     tasks.withType<Test>().configureEach {
         val testShardingArguments = project.testShardingArguments
-        val taskPath = path
-        testShardingArguments.shardTask.set(testShardingArguments.shardTimings.map { taskPath })
+        testShardingArguments.shardTask.set(path)
         jvmArgumentProviders.add(testShardingArguments)
         val shardTimingsPath = project.providers.gradleProperty(TEST_SHARD_TIMINGS_KEY).map { "$TEST_SHARD_TIMINGS_DIRECTORY/$it.tsv" }
 
