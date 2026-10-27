@@ -25,6 +25,7 @@ import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.gradle.dsl.KaptExtensionConfig
 import org.jetbrains.kotlin.gradle.dsl.KaptStubGenerationScheme
+import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics
 import org.jetbrains.kotlin.gradle.tasks.USING_JVM_INCREMENTAL_COMPILATION_MESSAGE
 import org.jetbrains.kotlin.gradle.testbase.*
 import org.jetbrains.kotlin.gradle.util.addBeforeSubstring
@@ -779,21 +780,37 @@ open class KaptIT : KaptBaseIT() {
                 """.trimIndent()
             )
 
-            val cacheWarning = "Kapt memory leak detection may report false positives"
+            val cacheWarning = KotlinToolingDiagnostics.KaptMemoryLeakDetectionWithClassLoadersCache
             build(":example:kaptKotlin") {
                 assertOutputContains("Memory leak detected!")
                 assertOutputContains("Location: 'org.kotlin.annotationProcessor.TestAnnotationProcessor', static field 'leaked'")
                 // The warning is about the 'standard' mode only.
-                assertOutputDoesNotContain(cacheWarning)
+                assertNoDiagnostic(cacheWarning)
             }
 
             subProject("example").buildGradle.modify { it.replace("detectMemoryLeaks = \"paranoid\"", "detectMemoryLeaks = \"standard\"") }
             build(":example:kaptKotlin", "--rerun-tasks") {
                 if ((buildOptions.kaptOptions?.classLoadersCacheSize ?: 0) > 0) {
-                    assertOutputContains(cacheWarning)
+                    assertHasDiagnostic(cacheWarning)
                 } else {
-                    assertOutputDoesNotContain(cacheWarning)
+                    assertNoDiagnostic(cacheWarning)
                 }
+            }
+        }
+    }
+
+    @DisplayName("Classloaders cache is reported as disabled when processors are discovered from the compile classpath")
+    @GradleTest
+    fun testClassLoadersCacheWithCompileClasspathDiscovery(gradleVersion: GradleVersion) {
+        project(
+            "simple".withPrefix,
+            gradleVersion,
+            buildOptions = defaultBuildOptions.copy(
+                kaptOptions = kaptOptions().copy(includeCompileClasspath = true, classLoadersCacheSize = 10)
+            )
+        ) {
+            build("build") {
+                assertHasDiagnostic(KotlinToolingDiagnostics.KaptClassLoadersCacheWithCompileClasspathDiscovery)
             }
         }
     }

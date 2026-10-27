@@ -26,6 +26,8 @@ import org.jetbrains.kotlin.gradle.internal.kapt.classloaders.JdkOnlyParentClass
 import org.jetbrains.kotlin.gradle.internal.kapt.classloaders.rootOrSelf
 import org.jetbrains.kotlin.gradle.internal.kapt.incremental.KaptIncrementalChanges
 import org.jetbrains.kotlin.gradle.dsl.KaptStubGenerationScheme
+import org.jetbrains.kotlin.gradle.plugin.diagnostics.KotlinToolingDiagnostics
+import org.jetbrains.kotlin.gradle.plugin.diagnostics.UsesKotlinToolingDiagnostics
 import org.jetbrains.kotlin.gradle.tasks.Kapt
 import org.jetbrains.kotlin.gradle.tasks.toSingleCompilerPluginOptions
 import org.jetbrains.kotlin.gradle.utils.getJdkClassesRoots
@@ -45,7 +47,7 @@ abstract class KaptWithoutKotlincTask @Inject constructor(
     objectFactory: ObjectFactory,
     private val providerFactory: ProviderFactory,
     private val workerExecutor: WorkerExecutor,
-) : KaptTask(objectFactory), Kapt {
+) : KaptTask(objectFactory), Kapt, UsesKotlinToolingDiagnostics {
 
     @get:Input
     var classLoadersCacheSize: Int = 0
@@ -54,7 +56,8 @@ abstract class KaptWithoutKotlincTask @Inject constructor(
     var disableClassloaderCacheForProcessors: Set<String> = emptySet()
 
     @get:Internal
-    var detectMemoryLeaks: String = "standard"
+    internal val detectMemoryLeaks: Property<KaptDetectMemoryLeaksMode> =
+        objectFactory.propertyWithConvention(KaptDetectMemoryLeaksMode.STANDARD)
 
     @get:Input
     var mapDiagnosticLocations: Boolean = false
@@ -165,7 +168,7 @@ abstract class KaptWithoutKotlincTask @Inject constructor(
 
             kaptFlagsForWorker,
             stubGenerationScheme.get().optionValue,
-            detectMemoryLeaks,
+            detectMemoryLeaks.get().name,
 
             disableClassloaderCacheForProcessors
         )
@@ -296,23 +299,14 @@ abstract class KaptWithoutKotlincTask @Inject constructor(
 
     private fun checkProcessorCachingSetup() {
         if (includeCompileClasspath.get() && classLoadersCacheSize > 0) {
-            logger.warn(
-                "The kapt annotation processor classloaders cache is disabled: it cannot be used together with"
-                        + " annotation processor discovery from the compilation classpath."
-                        + "\n'kapt.classloaders.cache.size=$classLoadersCacheSize' will have no effect until you also set"
-                        + " 'kapt.include.compile.classpath=false'. Both properties have to be set together;"
-                        + " discovery from the compilation classpath is deprecated."
-                        + "\nIf you disable discovery, declare every annotation processor in a 'kapt' configuration."
+            reportDiagnostic(
+                KotlinToolingDiagnostics.KaptClassLoadersCacheWithCompileClasspathDiscovery(classLoadersCacheSize),
+                reportOnce = true,
             )
         }
         // The 'paranoid' mode inspects every classloader right after annotation processing anyway, whatever its lifetime.
-        if (classLoadersCacheSize > 0 && (detectMemoryLeaks == "standard" || detectMemoryLeaks == "default")) {
-            logger.warn(
-                "Kapt memory leak detection may report false positives while the annotation processor classloaders cache is enabled:"
-                        + " cached classloaders are kept alive between builds on purpose, so the 'standard' mode cannot tell them"
-                        + " from leaked ones and reports suspicious static fields of cached processors as the 'paranoid' mode does."
-                        + "\nSet 'kapt.classloaders.cache.size=0' or 'kapt.detectMemoryLeaks = \"none\"' to avoid this."
-            )
+        if (classLoadersCacheSize > 0 && detectMemoryLeaks.get() == KaptDetectMemoryLeaksMode.STANDARD) {
+            reportDiagnostic(KotlinToolingDiagnostics.KaptMemoryLeakDetectionWithClassLoadersCache(), reportOnce = true)
         }
     }
 }
@@ -412,9 +406,8 @@ private class KaptExecution @Inject constructor(
         val mode = classLoader.kaptClass("AptMode")
             .enumConstants.single { (it as Enum<*>).name == "APT_ONLY" }
 
-        val detectMemoryLeaksModeName = if (detectMemoryLeaks == "default") "STANDARD" else detectMemoryLeaks.uppercase()
         val detectMemoryLeaksMode = classLoader.kaptClass("DetectMemoryLeaksMode")
-            .enumConstants.single { (it as Enum<*>).name == detectMemoryLeaksModeName }
+            .enumConstants.single { (it as Enum<*>).name == detectMemoryLeaks }
 
         val stubGenerationSchemeEnum = classLoader.kaptClass("StubGenerationScheme")
             .enumConstants.single { (it as Enum<*>).name == stubGenerationScheme.uppercase() }
@@ -507,3 +500,18 @@ internal data class KaptOptionsForWorker(
 
     val disableClassloaderCacheForProcessors: Set<String>
 ) : Serializable
+
+internal enum class KaptDetectMemoryLeaksMode {
+    STANDARD, PARANOID, NONE;
+
+    companion object {
+        fun fromExtensionValue(value: String): KaptDetectMemoryLeaksMode = when (value) {
+            "default", "standard" -> STANDARD
+            "paranoid" -> PARANOID
+            "none" -> NONE
+            else -> throw IllegalArgumentException(
+                "Unknown kapt 'detectMemoryLeaks' value '$value', expected one of: 'standard', 'paranoid', 'none'."
+            )
+        }
+    }
+}
