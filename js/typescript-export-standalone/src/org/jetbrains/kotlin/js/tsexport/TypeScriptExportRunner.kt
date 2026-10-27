@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.analysis.api.klib.reader.createKaModulesForStandalon
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaLibraryModule
 import org.jetbrains.kotlin.analysis.api.session.analyze
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.impl.deduplicating
 import org.jetbrains.kotlin.ir.backend.js.tsexport.ExportedDeclaration
 import org.jetbrains.kotlin.ir.backend.js.tsexport.toTypeScript
 import org.jetbrains.kotlin.ir.backend.js.tsexport.toTypeScriptFragment
@@ -59,7 +60,12 @@ public fun runTypeScriptExport(
 
     val kaModules = createKaModulesForStandaloneAnalysis(klibs, config.targetPlatform)
     val exportModel = kaModules.use { kaModules ->
-        val generator = ExportModelGenerator(TypeScriptExportContext(config, diagnosticReporter))
+        val generator = ExportModelGenerator(
+            TypeScriptExportContext(
+                config,
+                diagnosticReporter.deduplicating()
+            )
+        )
         analyze(kaModules.useSiteModule) {
             generator.generateExport(kaModules)
         }

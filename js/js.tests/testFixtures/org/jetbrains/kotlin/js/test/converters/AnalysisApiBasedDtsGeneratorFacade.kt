@@ -112,9 +112,7 @@ class AnalysisApiBasedDtsGeneratorFacade(
                 add(createInputModule(module))
             }
 
-            runTypeScriptExportOrFail(inputModules, config) {
-                testServices.assertions.fail(it)
-            }
+            runTypeScriptExportOrFail(inputModules, config, JUnit5Assertions::fail)
         }
 
         // TODO(KT-88562): This result is not used down the pipeline, so it doesn't matter what we put here. We need to refactor this

@@ -5,8 +5,8 @@
 
 package org.jetbrains.kotlin.js.tsexport
 
+import org.jetbrains.kotlin.KtIoFileSourceFile
 import org.jetbrains.kotlin.KtSourceFile
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.diagnostics.DiagnosticContext
@@ -14,15 +14,13 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnostic
 import org.jetbrains.kotlin.diagnostics.KtSourcelessDiagnosticFactory
 import org.jetbrains.kotlin.diagnostics.report
+import java.io.File
 
 internal class TypeScriptExportContext(
     val config: TypeScriptExportConfig,
     val diagnosticReporter: DiagnosticReporter,
 ) : DiagnosticContext {
-    private val reportedDiagnostics = hashSetOf<Triple<KtSourcelessDiagnosticFactory, String, CompilerMessageSourceLocation?>>()
-
-    // Those two properties are not used inside the TypeScript standalone exporter
-    override val containingFile: KtSourceFile? get() = null
+    override var containingFile: KtSourceFile? = null
     override val languageVersionSettings: LanguageVersionSettings get() = LanguageVersionSettingsImpl.DEFAULT
 
     override fun isDiagnosticSuppressed(diagnostic: KtDiagnostic): Boolean = false
@@ -31,26 +29,17 @@ internal class TypeScriptExportContext(
      * KLIBs don't contain the exact source positions of the declarations, so the best location we can provide is the source file
      * of the top-level declaration that is currently being exported.
      */
-    private var currentLocation: CompilerMessageSourceLocation? = null
-
-    fun <T> withLocation(location: CompilerMessageSourceLocation?, block: () -> T): T {
-        val previousLocation = currentLocation
-        currentLocation = location
+    fun <T> withSourceFile(sourceFileName: String?, block: () -> T): T {
+        val previousFile = containingFile
+        containingFile = sourceFileName?.let { KtIoFileSourceFile(File(it)) }
         try {
             return block()
         } finally {
-            currentLocation = previousLocation
+            containingFile = previousFile
         }
     }
 
-    /**
-     * The same failure type may be met many times while exporting a single file. Because, we don't have info about lines and columns,
-     * to not spam with identical diagnostics on a file the identical diagnostics are reported only once.
-     */
     fun report(factory: KtSourcelessDiagnosticFactory, message: String = "") {
-        val location = currentLocation
-        if (reportedDiagnostics.add(Triple(factory, message, location))) {
-            diagnosticReporter.report(factory, message, location)
-        }
+        diagnosticReporter.report(factory, message)
     }
 }

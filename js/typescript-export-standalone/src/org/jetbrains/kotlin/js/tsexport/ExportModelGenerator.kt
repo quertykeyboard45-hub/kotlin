@@ -115,7 +115,7 @@ internal class ExportModelGenerator(private val context: TypeScriptExportContext
 
         val key = FileArtifactKey(packageFqName, fileName)
         // Analysis API doesn't have any source location information except source file name
-        val exportedDeclarations = context.withLocation(CompilerMessageLocation.create(sourceFileName)) {
+        val exportedDeclarations = context.withSourceFile(sourceFileName) {
             when (declaration) {
                 is KaNamedFunctionSymbol -> listOfNotNull(exportFunction(declaration, parent = null, classTypeParameterScope = emptyMap()))
                 is KaPropertySymbol -> exportProperty(declaration, parent = null, classTypeParameterScope = emptyMap())
