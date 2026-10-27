@@ -109,7 +109,7 @@ internal class SymbolLightMethodForMappedJavaCollectionStubMethod(
      * It is called lazily by [SymbolLightParameterForMappedJavaCollectionStubMethod].
      *
      * A boxed primitive is unboxed only where the stub stands for a Kotlin parameter of the element, key or value type,
-     * e.g., `add(int)` and `contains(int)` in `List<Int>`.
+     * e.g., `add(int)` and `contains(int)` in `List<Int>`, unless that type is nullable (see [unboxedUnlessNullable]).
      * JDK default methods are an exception: the mutable Kotlin collection inherits them from Java with their Java types,
      * so `Map<Int, Int>` gets `replace(Integer, Integer, Integer)`.
      */
