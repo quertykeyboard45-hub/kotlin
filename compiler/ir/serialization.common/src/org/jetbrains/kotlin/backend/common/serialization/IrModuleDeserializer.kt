@@ -92,12 +92,6 @@ abstract class IrModuleDeserializer(
     abstract fun tryDeserializeIrSymbol(idSig: IdSignature, symbolKind: BinarySymbolData.SymbolKind): IrSymbol?
     abstract fun deserializedSymbolNotFound(idSig: IdSignature): Nothing
 
-    open fun referenceSimpleFunctionByLocalSignature(file: IrFile, idSignature: IdSignature): IrSimpleFunctionSymbol =
-        error("Unsupported operation")
-
-    open fun referencePropertyByLocalSignature(file: IrFile, idSignature: IdSignature): IrPropertySymbol =
-        error("Unsupported operation")
-
     open fun declareIrSymbol(symbol: IrSymbol) {
         val signature = symbol.signature
         require(signature != null) { "Symbol is not public API" }
@@ -122,6 +116,7 @@ abstract class IrModuleDeserializer(
 
     open val strategyResolver: DeserializationStrategyResolver = DeserializationStrategy.ONLY_DECLARATION_HEADERS
 
+    open val fileDeserializers: Map<IrFile, IrFileDeserializer> get() = emptyMap()
     open fun fileDeserializers(): Collection<IrFileDeserializer> = emptyList()
 
     val compatibilityMode: CompatibilityMode get() = CompatibilityMode(libraryAbiVersion)
@@ -192,12 +187,6 @@ class IrModuleDeserializerWithBuiltIns(
 
         return checkIsFunctionInterface(topLevel) || idSig in delegate
     }
-
-    override fun referenceSimpleFunctionByLocalSignature(file: IrFile, idSignature: IdSignature) : IrSimpleFunctionSymbol =
-        delegate.referenceSimpleFunctionByLocalSignature(file, idSignature)
-
-    override fun referencePropertyByLocalSignature(file: IrFile, idSignature: IdSignature): IrPropertySymbol =
-        delegate.referencePropertyByLocalSignature(file, idSignature)
 
     override fun deserializeReachableDeclarations() {
         delegate.deserializeReachableDeclarations()

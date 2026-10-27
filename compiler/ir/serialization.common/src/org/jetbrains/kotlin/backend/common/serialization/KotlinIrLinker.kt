@@ -57,18 +57,20 @@ abstract class KotlinIrLinker(
     val fileEntryDeserializer = FileEntryDeserializer(irInterner)
 
     protected val fileLocalSymbolProvider = object : FileLocalSymbolProvider {
-        override fun referenceSimpleFunction(file: IrFile, signature: IdSignature.FileLocalSignature): IrSimpleFunctionSymbol {
-            return findModuleDeserializer(file).referenceSimpleFunctionByLocalSignature(file, signature)
-        }
+        override fun referenceSimpleFunction(file: IrFile, signature: IdSignature.FileLocalSignature): IrSimpleFunctionSymbol =
+            resolveFileDeserializer(file)
+                .symbolDeserializer
+                .deserializeSymbolWithOwnerInCurrentFile(signature, BinarySymbolData.SymbolKind.FUNCTION_SYMBOL) as IrSimpleFunctionSymbol
 
-        override fun referenceProperty(file: IrFile, signature: IdSignature.FileLocalSignature): IrPropertySymbol {
-            return findModuleDeserializer(file).referencePropertyByLocalSignature(file, signature)
-        }
+        override fun referenceProperty(file: IrFile, signature: IdSignature.FileLocalSignature): IrPropertySymbol =
+            resolveFileDeserializer(file)
+                .symbolDeserializer
+                .deserializeSymbolWithOwnerInCurrentFile(signature, BinarySymbolData.SymbolKind.PROPERTY_SYMBOL) as IrPropertySymbol
 
-        private fun findModuleDeserializer(irFile: IrFile): IrModuleDeserializer {
-            return firstModuleDeserializerOrNull(irFile.packageFqName) { moduleDeserializer ->
-                moduleDeserializer.fileDeserializers().any { it.file == irFile }
-            } ?: error("No module deserializer found for file: $irFile")
+        private fun resolveFileDeserializer(irFile: IrFile): IrFileDeserializer {
+            return firstNotNullOfModuleDeserializersOrNull(irFile.packageFqName) { moduleDeserializer ->
+                moduleDeserializer.fileDeserializers().firstOrNull { it.file == irFile }
+            } ?: error("No file deserializer found for file: $irFile")
         }
     }
 
