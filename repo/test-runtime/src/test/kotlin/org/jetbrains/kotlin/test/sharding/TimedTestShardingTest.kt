@@ -43,4 +43,12 @@ class TimedTestShardingTest {
             }
         }
     }
+
+    @Test
+    fun `a class is listed at most once per task`() {
+        assertEquals(0, TimedTestSharding(listOf(":a:test\tA1\t10", ":b:test\tA1\t10"), ":a:test", shardCount = 2).shardFor("A1"))
+        assertFailsWith<IllegalStateException> {
+            TimedTestSharding(listOf(":a:test\tA1\t10", ":a:test\tA1\t20"), ":a:test", shardCount = 2)
+        }
+    }
 }

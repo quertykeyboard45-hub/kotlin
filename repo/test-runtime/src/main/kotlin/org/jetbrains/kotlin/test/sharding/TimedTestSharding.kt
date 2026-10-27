@@ -10,8 +10,8 @@ import java.io.File
 /**
  * Assigns test classes to shards by their recorded times, so that the shards take equally long.
  *
- * The [timings] list the test classes of all test tasks of a build, one `<task path>\t<class name>\t<milliseconds>` per line
- * (as written by the `test-inventory` tool of kotlin-infrastructure).
+ * The [timings] list the test classes of all test tasks of a build, one `<task path>\t<class name>\t<milliseconds>` line
+ * per class and task (as written by the `test-inventory` tool of kotlin-infrastructure).
  * The classes go to shards longest first, each to the shard with the least time so far (the lowest one on a tie).
  * Classes of all tasks are assigned together, because a shard runs all of its tasks.
  * Every shard computes the same assignment from the same timings.
@@ -26,11 +26,15 @@ internal class TimedTestSharding(timings: List<String>, taskPath: String, shardC
     private val classShards = HashMap<String, Int>()
 
     init {
+        val listedClasses = HashSet<Pair<String, String>>()
         val classTimes = timings.withIndex().filter { it.value.isNotBlank() }.map { (index, line) ->
             val fields = line.split('\t')
             val time = fields.getOrNull(2)?.toLongOrNull()
             if (fields.size != 3 || time == null) {
                 error("Invalid line ${index + 1} of the test shard timings: '$line'; Expected '<task path>\\t<class name>\\t<milliseconds>'")
+            }
+            if (!listedClasses.add(fields[0] to fields[1])) {
+                error("Duplicate task and class in line ${index + 1} of the test shard timings: '$line'; Expected one line per task and class")
             }
             ClassTime(fields[0], fields[1], time)
         }
