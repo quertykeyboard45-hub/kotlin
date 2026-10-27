@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.generators.dsl.junit5.generateTestGroupSuiteWithJUni
 import org.jetbrains.kotlin.generators.model.annotation
 import org.jetbrains.kotlin.generators.util.TestGeneratorUtil
 import org.jetbrains.kotlin.incremental.*
+import org.jetbrains.kotlin.js.test.JsConstLetTest
 import org.jetbrains.kotlin.js.test.JsEs6Test
 import org.jetbrains.kotlin.js.test.JsInlineAnonymousFunctionsTest
 import org.jetbrains.kotlin.js.test.runners.*
@@ -114,6 +115,10 @@ fun main(args: Array<String>) {
             testClass<AbstractJsSwcBoxTest>(annotations = listOf(swcTag())) {
                 model(pattern = "^([^_](.+))\\.kt$")
             }
+
+            testClass<AbstractJsES6WithConstLetBoxTest>(annotations = listOf(es6(), constLet())) {
+                model(pattern = "^([^_](.+))\\.kt$")
+            }
         }
 
         testGroup(testsRoot, "js/js.translator/testData/typescript-export/js", testRunnerMethodName = "runTest0") {
@@ -197,6 +202,10 @@ fun main(args: Array<String>) {
                 model("box", excludeDirs = jvmOnlyBoxTests + k1BoxTestDir)
             }
 
+            testClass<AbstractJsES6WithConstLetCodegenBoxTest>(annotations = listOf(es6(), constLet())) {
+                model("box", excludeDirs = jvmOnlyBoxTests + k1BoxTestDir)
+            }
+
             testClass<AbstractJsCodegenSplittingTest> {
                 model("box")
                 model("boxInline")
@@ -212,6 +221,10 @@ fun main(args: Array<String>) {
                     inlineAnonymousFunctions(),
                 )
             ) {
+                model("boxInline")
+            }
+
+            testClass<AbstractJsES6WithConstLetCodegenInlineTest>(annotations = listOf(es6(), constLet())) {
                 model("boxInline")
             }
 
@@ -308,5 +321,7 @@ fun main(args: Array<String>) {
 private fun es6() = annotation<JsEs6Test>()
 
 private fun inlineAnonymousFunctions() = annotation<JsInlineAnonymousFunctionsTest>()
+
+private fun constLet() = annotation<JsConstLetTest>()
 
 private fun swcTag() = annotation(Tag::class.java, "swc")
