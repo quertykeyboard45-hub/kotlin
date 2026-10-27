@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.light.classes.symbol.annotations.MethodAdditionalAnn
 import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassForClassOrObject
 import org.jetbrains.kotlin.light.classes.symbol.classes.isJavaLangObject
 import org.jetbrains.kotlin.light.classes.symbol.classes.isTypeParameter
-import org.jetbrains.kotlin.light.classes.symbol.classes.unboxedOrSelf
+import org.jetbrains.kotlin.light.classes.symbol.classes.unboxedUnlessNullable
 import org.jetbrains.kotlin.light.classes.symbol.modifierLists.GranularModifiersBox
 import org.jetbrains.kotlin.light.classes.symbol.modifierLists.SymbolLightMemberModifierList
 import org.jetbrains.kotlin.light.classes.symbol.modifierLists.with
@@ -120,7 +120,7 @@ internal class SymbolLightMethodForMappedJavaCollectionStubMethod(
         val shouldTryToUnbox = providedType != null ||
                 (typeFromJava.isJavaLangObject() && substituteObjectWith == candidateType) ||
                 (typeFromJava.isTypeParameter() && !javaMethod.hasModifierProperty(PsiModifier.DEFAULT))
-        return if (shouldTryToUnbox) candidateType.unboxedOrSelf() else candidateType
+        return if (shouldTryToUnbox) candidateType.unboxedUnlessNullable() else candidateType
     }
 
     /**

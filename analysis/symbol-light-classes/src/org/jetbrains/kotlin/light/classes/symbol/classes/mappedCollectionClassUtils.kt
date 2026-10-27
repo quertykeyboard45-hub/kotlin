@@ -439,12 +439,13 @@ internal fun PsiType.isTypeParameter(): Boolean =
     this is PsiClassType && this.resolve() is PsiTypeParameter
 
 /**
- * Returns the primitive type for this boxed primitive type, e.g., `int` for `Integer`. Other types are returned unchanged.
+ * Returns the primitive type for this boxed primitive type, e.g., `int` for `Integer`, unless this type is annotated with `@Nullable`.
+ * Other types are returned unchanged.
  *
- * A type annotated with `@Nullable` stays boxed: it comes from a nullable Kotlin type, like `Int?` in `List<Int?>`,
- * which can't be primitive.
+ * The annotation comes from [createPsiSubstitutor], which maps the type arguments of the Kotlin collection supertype to Java types
+ * annotated with their nullability. It marks a nullable Kotlin type, like `Int?` in `List<Int?>`, which can't be primitive.
  */
-internal fun PsiType.unboxedOrSelf(): PsiType = when {
+internal fun PsiType.unboxedUnlessNullable(): PsiType = when {
     hasAnnotation(JvmAnnotationNames.JETBRAINS_NULLABLE_ANNOTATION.asString()) -> this
     else -> PsiPrimitiveType.getUnboxedType(this)?.annotate(TypeAnnotationProvider.EMPTY) ?: this
 }
