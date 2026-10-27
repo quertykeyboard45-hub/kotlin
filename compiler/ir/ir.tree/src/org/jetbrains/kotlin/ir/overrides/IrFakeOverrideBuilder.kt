@@ -16,8 +16,6 @@ import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.collectAndFilterRealOverrides
 import org.jetbrains.kotlin.ir.util.fileOrNull
 import org.jetbrains.kotlin.ir.util.isClass
-import org.jetbrains.kotlin.ir.util.isFakeOverride
-import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.utils.filterIsInstanceAnd
@@ -220,8 +218,8 @@ class IrFakeOverrideBuilder(
                         overridden += fromSupertype
                         bound += fromSupertype
                     }
-                    strategy.createFakeOverridesForInvisibleAbstractMembers && fromSupertype.original.modality == Modality.ABSTRACT -> {
-                        // If the member shadows some abstract method, ensure the fake override is still created. So neither mark
+                    strategy.createFakeOverridesForShadowingMembers -> {
+                        // If the member shadows a base member, ensure the fake override is still created. So neither mark
                         // the super as bound nor overridden. The F/O created may have the same signature and therefore clash with
                         // this member, but Klib-based backends are able to handle that.
                     }
