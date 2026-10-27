@@ -204,10 +204,7 @@ abstract class JsAbstractInvalidationTest(
                         allLibraries.mapTo(this, ::createTypeScriptExportInputModule)
                     }
 
-                    AnalysisApiBasedDtsGeneratorFacade
-                        .runTypeScriptExportOrFail(tsExportModules, tsExportConfig) {
-                            JUnit5Assertions.fail(it)
-                        }
+                    AnalysisApiBasedDtsGeneratorFacade.runTypeScriptExportOrFail(tsExportModules, tsExportConfig)
 
                     // Verify TypeScript generated from IR (legacy)
                     verifyDTS(projStep.id, testInfo, jsDir)

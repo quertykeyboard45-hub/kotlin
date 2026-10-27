@@ -49,12 +49,11 @@ class AnalysisApiBasedDtsGeneratorFacade(
         inline fun runTypeScriptExportOrFail(
             klibs: List<KlibInputModule<TypeScriptModuleConfig>>,
             config: TypeScriptExportConfig,
-            fail: (() -> String) -> Nothing,
         ): List<File> {
             val diagnosticsCollector = DiagnosticsCollectorImpl()
             val result = runTypeScriptExport(klibs, config, diagnosticsCollector)
             if (diagnosticsCollector.hasErrors) {
-                fail {
+                JUnit5Assertions.fail {
                     diagnosticsCollector.diagnostics.joinToString(separator = "\n", prefix = "TypeScript export reported errors:\n") {
                         val location = (it as? KtDiagnosticWithoutSource)?.location?.let { location -> " (at $location)" }.orEmpty()
                         "${it.factoryName}: ${it.renderMessage()}$location"
@@ -112,7 +111,7 @@ class AnalysisApiBasedDtsGeneratorFacade(
                 add(createInputModule(module))
             }
 
-            runTypeScriptExportOrFail(inputModules, config, JUnit5Assertions::fail)
+            runTypeScriptExportOrFail(inputModules, config)
         }
 
         // TODO(KT-88562): This result is not used down the pipeline, so it doesn't matter what we put here. We need to refactor this
