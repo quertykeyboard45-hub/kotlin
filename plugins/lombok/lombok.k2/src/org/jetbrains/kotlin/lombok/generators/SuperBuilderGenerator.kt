@@ -153,7 +153,7 @@ class SuperBuilderGenerator(session: FirSession) : AbstractBuilderGenerator<Supe
 
             if (!superTypeSymbol.isClass) return@firstNotNullOfOrNull null
 
-            val builderNames = getBuilderNames(superTypeSymbol)
+            val builderNames = getBuilderNames(superTypeSymbol, filterExistingNames = true)
 
             // `@SingleBuilder` is only applicable to classes. It means it can be <= 1 builder in a super type.
             val builderName = builderNames.firstOrNull() ?: return@firstNotNullOfOrNull null
