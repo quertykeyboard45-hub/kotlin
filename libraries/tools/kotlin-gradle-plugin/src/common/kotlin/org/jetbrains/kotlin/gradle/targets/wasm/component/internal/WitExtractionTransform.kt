@@ -12,12 +12,12 @@ import org.gradle.api.artifacts.transform.TransformParameters
 import org.gradle.api.file.ArchiveOperations
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.FileSystemOperations
-import org.gradle.api.file.RelativePath
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.targets.wasm.component.WIT_DIRECTORY_NAME
+import org.jetbrains.kotlin.gradle.utils.copyDirectoryContentWithoutTopLevelSegment
 import java.io.File
 import javax.inject.Inject
 
@@ -57,18 +57,7 @@ internal abstract class WitExtractionTransform @Inject constructor(
 
         if (witFiles.isEmpty) return
 
-        fileOperations.copy { copy ->
-            copy.from(witFiles) { wit ->
-                wit.includeEmptyDirs = false
-                wit.eachFile { file ->
-                    file.relativePath = RelativePath(
-                        true,
-                        *file.relativePath.segments.drop(1).toTypedArray()
-                    )
-                }
-            }
-            copy.into(outputs.dir(outputDirectoryName(klib)))
-        }
+        fileOperations.copyDirectoryContentWithoutTopLevelSegment(witFiles, outputs.dir(outputDirectoryName(klib)))
     }
 
     private fun outputDirectoryName(klib: File): String =
