@@ -139,7 +139,7 @@ internal fun hasCollectionSupertype(allSupertypes: Iterable<KaClassType>): Boole
  *    - The original Kotlin method SHOULD still be generated with its Kotlin signature
  *
  * 3. **Erased signature case** (returns `false`):
- *    - Each parameter that is `Object` in Java has a type parameter type in Kotlin
+ *    - The Java method has `Object` parameters, and each of them has a type parameter type in Kotlin
  *      (e.g., `contains(element: E)` for `contains(Object)`, or `getOrDefault(key: K, defaultValue: String)` for `getOrDefault(Object, V)`)
  *    - The type parameters are assumed to erase to `Object`, which doesn't hold for a bounded one, like `K : CharSequence`
  *    - Generates a single non-final bridge method with the erased Java signature
@@ -168,10 +168,12 @@ internal fun processPossiblyMappedCollectionMethod(
     val collectionSupertype = allSupertypes.find { it.classId == kotlinCollectionFunction.callableId?.classId } ?: return true
     val javaCollection = javaMethod.containingClass ?: return true
     val substitutor = createPsiSubstitutor(javaCollection, collectionSupertype, containingClass)
+    // The parameters of `ownFunction` that are `Object` in Java
+    val objectParameters = ownFunction.valueParameters.filterIndexed { index, _ ->
+        javaMethod.parameterList.getParameter(index)?.type?.isJavaLangObject() == true
+    }
     val isErasedSignature = javaMethod.name in ERASED_COLLECTION_METHOD_NAMES ||
-            javaMethod.parameterList.parameters.zip(ownFunction.valueParameters).all { [javaParameter, parameter] ->
-                !javaParameter.type.isJavaLangObject() || parameter.returnType is KaTypeParameterType
-            }
+            objectParameters.isNotEmpty() && objectParameters.all { it.returnType is KaTypeParameterType }
 
     val lightMemberOrigin = (ownFunction.psi as? KtDeclaration)?.let { originalElement ->
         LightMemberOriginForDeclaration(originalElement, originKind)
