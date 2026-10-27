@@ -18,5 +18,5 @@ class WasmCompilationSetsGroupingStageBoxWithSingleVmRunner(
     override val wasmBoxRunner: WasmBoxRunner
         get() = WasmBoxRunner(firstNonGroupingTestServices, executeWithV8Only = true)
 
-    // TODO KT-90785: Add an overwrite to only run on Wasmtime once WasiBoxRunner also runs WasmEdge again
+    // TODO KT-90785: Add an overwrite to only run on Wasmtime/WasmEdge (whichever is faster) once WasmEdge is reintroduced
 }
