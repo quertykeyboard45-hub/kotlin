@@ -75,7 +75,7 @@ interface KlibModuleFragmentWriteStrategy {
  */
 class KlibModuleMetadata(
     @Deprecated(
-        "The module name is going to be dropped from KLIB metadata (KT-87197). " +
+        "The module name is going to be dropped in MV=2.6.0 (see https://youtrack.jetbrains.com/issue/KT-87197). " +
                 "Use the `unique_name` property from the KLIB manifest instead.",
         level = DeprecationLevel.WARNING,
     )
@@ -216,7 +216,7 @@ class KlibModuleMetadata(
         }
 
         @Suppress("DEPRECATION") // The name keeps being written to the header until it is dropped (KT-87197).
-        val moduleName = name ?: error("The module name is required to write the metadata header (KT-87197)")
+        val moduleName = name ?: error("The module name is required to write the metadata header in MV < 2.6.0 (see https://youtrack.jetbrains.com/issue/KT-87197)")
         return SerializedKlibMetadata(
             KlibMetadataProtoBuf.Header.newBuilder().also { proto ->
                 proto.moduleName = wrapModuleName(moduleName)
