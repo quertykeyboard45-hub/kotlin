@@ -444,9 +444,9 @@ internal fun PsiType.isTypeParameter(): Boolean =
  * A type annotated with `@Nullable` stays boxed: it comes from a nullable Kotlin type, like `Int?` in `List<Int?>`,
  * which can't be primitive.
  */
-internal fun PsiType.unboxedOrSelf(): PsiType {
-    if (hasAnnotation(JvmAnnotationNames.JETBRAINS_NULLABLE_ANNOTATION.asString())) return this
-    return PsiPrimitiveType.getUnboxedType(this)?.annotate(TypeAnnotationProvider.EMPTY) ?: this
+internal fun PsiType.unboxedOrSelf(): PsiType = when {
+    hasAnnotation(JvmAnnotationNames.JETBRAINS_NULLABLE_ANNOTATION.asString()) -> this
+    else -> PsiPrimitiveType.getUnboxedType(this)?.annotate(TypeAnnotationProvider.EMPTY) ?: this
 }
 
 internal fun PsiType.isJavaLangObject(): Boolean =
