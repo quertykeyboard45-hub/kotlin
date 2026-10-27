@@ -51,7 +51,7 @@ class JsIrLinker(
     override val irMangler: KotlinMangler.IrMangler = JsManglerIr
 
     override val fakeOverrideBuilder = IrLinkerFakeOverrideProvider(
-        linker = this,
+        fileLocalSymbolProvider = fileLocalSymbolProvider,
         symbolTable = symbolTable,
         mangler = irMangler,
         friendModules = friendModules,
